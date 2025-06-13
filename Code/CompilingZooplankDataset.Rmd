@@ -1,0 +1,146 @@
+---
+title: "CompilingZooplankDataset"
+author: "DennieT"
+date: "2022-11-15"
+output: word_document
+---
+
+
+
+Purpose:
+This Rmarkdown is to fix the date and combine all the curise discrete zooplankton biomass data together.
+
+
+#Import package
+```{r}
+library("tidyverse")
+library(ggplot2)
+library("lubridate")
+library(dplyr)
+```
+
+```{r, echo = FALSE}
+library(kableExtra)
+```
+
+
+
+#Set Directory
+```{r}
+getwd()
+setwd("C:/Users/denni/Documents/RStudioBigelow/FieldProject")
+```
+
+
+
+#Import Zooplankton Data
+```{r}
+ZooplankData <- read.csv("ZooplanktonData.csv", header=TRUE)
+#View(ZooplankData)
+```
+
+
+#Make Date into type = Date
+```{r}
+ZooplankData <- ZooplankData %>% 
+  mutate(Date = mdy(ZooplankData$Date))
+```
+
+
+### Add Year and DOY to Zooplankton Data
+```{r}
+#Add Year column to dataset
+ZooplankData <- ZooplankData %>% 
+  mutate(Year = year(ZooplankData$Date)) %>% 
+  mutate(DOY = yday(ZooplankData$Date)) %>% 
+  mutate(Month = month(ZooplankData$Date))
+
+```
+
+
+###Save Zooplankton dataset into new csv file
+```{r}
+write.csv(ZooplankData,"ZooplanktonData2.csv",row.names=FALSE)
+```
+
+
+
+
+
+#Import CTD Data
+```{r}
+# CTDData <- read.csv("DaRTS2012_2022.csv", header=TRUE)
+#View(CTDData)
+```
+
+
+```{r}
+# CTDData <- CTDData %>%
+#   mutate(Date = ymd(CTDData$Date))
+```
+
+
+### Adding new columns to a data frame with `mutate`
+In the following, we are going to add a new column to our data frames with these newly formatted dates. In each case, the new column will have the name `Date`. Note if a column already exists with the name you are assigning in the mutate function, the original column will be overwritten. So here, we are overwriting the original dates, with the newly formatted dates.
+```{r}
+#Add Year column to dataset
+# CTDData <- CTDData %>%
+#   mutate(Year = year(CTDData$Date)) %>%
+#   mutate(Month = month(CTDData$Date)) %>%
+#   mutate(Day = day(CTDData$Date)) %>%
+#   mutate(DOY = yday(CTDData$Date))
+
+```
+
+
+###Save dataset into new csv file
+```{r}
+# write.csv(CTDData,"DaRTS2012_2022CTD.csv",row.names=FALSE)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Make a column for day, month and year
+I want to make a year, month and day column so I could full join using these columns instead of having to do the DateCode (changed from Datanoans to Datecode, also have to change Stationnoans to Station) which allowed me to fulljoin using Datecode and Station
+```{r}
+#trapzdata <- trapzdata %>% 
+  #mutate(Year = year(trapzdata$Datenonan),
+         #Month = month(trapzdata$Datenonan),
+         #Day = day(trapzdata$Datenonan))
+```
+
+
+
+
+
+
+#Filter data
+```{r}
+#Filter by Date
+#cruisedata <- dplyr::filter(DATA,Date==20120911)
+#View(cruisedata)
+
+
+#Filter by Station
+#stnData <- dplyr::filter(cruisedata,Station==1)
+#View(stnData)
+
+
+#Combine filter
+#subData <- dplyr::filter(ZooplanktonData),Date==2012 & Station==1)
+#View(subData)
+```

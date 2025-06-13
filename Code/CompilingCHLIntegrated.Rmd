@@ -1,0 +1,222 @@
+---
+title: "CompilingCHLIntegrated"
+author: "DennieT"
+date: "2022-11-16"
+output: html_document
+---
+
+
+#Import package
+```{r}
+library("tidyverse")
+library(ggplot2)
+library("lubridate")
+library(dplyr)
+
+library('pracma')
+library("tidyverse")
+```
+
+
+```{r, echo = FALSE}
+library(kableExtra)
+```
+
+
+#Set Directory
+```{r}
+getwd()
+setwd("C:/Users/denni/Documents/RStudioBigelow/FieldProject")
+```
+
+
+
+#Import Data
+```{r}
+CHLIntegrateData <- read.csv("DaRTS2012_2022CTD.csv", header=TRUE)
+#View(CHLIntegrateData)
+
+CHLIntegrateData <- CHLIntegrateData %>% mutate(Date = mdy(CHLIntegrateData$Date))
+
+ZooplanktonData2 <- read.csv("ZooplanktonData2.csv", header=TRUE)
+
+ZooplanktonData2 <- ZooplanktonData2 %>% mutate(Date = ymd(ZooplanktonData2$Date))
+#View(ZooplanktonData2)
+```
+
+
+
+#Filter data & Integrate 2012-09-11 Station 1 data
+```{r}
+#Combine filter
+CHL09112012A <- dplyr::filter(CHLIntegrateData, Station == 1 & Year == 2012 & Month == 9 & Day == 11)
+#View(CHL2012)
+
+fluorescence09112012A <- CHL09112012A$Fluorescence_mg_m3
+depth09112012A <- CHL09112012A$Depth_m
+
+x09112012A=trapz(depth09112012A,fluorescence09112012A)
+x09112012A
+```
+
+
+
+#Filter data  & Integrate 2012-09-11 Station 3 data
+```{r}
+#Combine filter
+CHL09112012C <- dplyr::filter(CHLIntegrateData, Station == 3 & Year == 2012 & Month == 9 & Day == 11)
+#View(CHL2012)
+
+fluorescence09112012C <- CHL09112012C$Fluorescence_mg_m3
+depth09112012C <- CHL09112012C$Depth_m
+
+x09112012C=trapz(depth09112012C,fluorescence09112012C)
+x09112012C
+
+#Use cumtrapz if you want added area for each trapezoid
+#x09112012C=cumtrapz(depth09112012C,fluorescence09112012C)
+```
+
+#Filter data  & Integrate 2012-09-11 Station 4 data
+```{r}
+#Combine filter
+CHL09112012D <- dplyr::filter(CHLIntegrateData, Station == 4 & Year == 2012 & Month == 9 & Day == 11)
+#View(CHL2012)
+
+fluorescence09112012D <- CHL09112012D$Fluorescence_mg_m3
+depth09112012D <- CHL09112012D$Depth_m
+
+x09112012D=trapz(depth09112012D,fluorescence09112012D)
+x09112012D
+```
+
+
+#Filter data & Integrate 2012-09-18 Station 1 data
+```{r}
+#Combine filter
+CHL09182012A <- dplyr::filter(CHLIntegrateData, Station == 1 & Year == 2012 & Month == 9 & Day == 18)
+#View(CHL09182012A
+
+fluorescence09182012A <- CHL09182012A$Fluorescence_mg_m3
+depth09182012A <- CHL09182012A$Depth_m
+
+x09182012A=trapz(depth09182012A,fluorescence09182012A)
+x09182012A
+```
+
+
+
+# Get Fluorescence for all water columns
+```{r}
+fluorescence <- CHLIntegrateData$Fluorescence_mg_m3
+depth <- CHLIntegrateData$Depth_m
+Station <- CHLIntegrateData$Station
+Date <- CHLIntegrateData$Date
+typeof(CHLIntegrateData$Date)
+
+#extract good values
+nonans <- is.finite(fluorescence)
+
+Fluorescencenonan <- fluorescence[nonans]
+Depthnonan <- depth[nonans]
+Station <- Station[nonans]
+Date <- Date[nonans]
+
+
+#create dataframe
+nonandata <- data.frame(Date, Station, Depthnonan, Fluorescencenonan)
+
+#Mutate add new column to a dataframe
+#nonandata <- mutate(nonandata, Date = ymd(nonandata$Date))
+
+#apply trapz function
+trapzdata <- nonandata %>% 
+  group_by(Date, Station) %>% 
+  summarise(IntegratedCHL=trapz(Depthnonan,Fluorescencenonan))
+#trapzdata
+```
+
+
+#Get mean of Temperature at depth 2 (1.5 to 2.5 meters)
+```{r}
+Temp_2m <- CHLIntegrateData %>%  filter(Depth_m >= 1.5 & Depth_m <= 2.5)%>% 
+  group_by(Date, Station) %>% 
+  summarize_all(mean)
+
+#Temp_2m <- Temp_2m %>% mutate(Date = ymd(Temp_2m$Date)) #Change format to Date type
+
+Tempfilter1 <- data.frame(Date=Temp_2m$Date, Station=Temp_2m$Station, Temperature_2m=Temp_2m$Temperature_C)
+```
+
+
+
+#Get mean of Temperature at depth 10 (9.5 to 10.5 meters)
+```{r}
+Temp_10m <- CHLIntegrateData %>%  filter(Depth_m >= 9.5 & Depth_m <= 10.5)%>% 
+  group_by(Date, Station) %>% 
+  summarize_all(mean)
+#Temp_10m <- Temp_10m %>% mutate(Date = ymd(Temp_10m$Date))
+
+Tempfilter2 <- data.frame(Date=Temp_10m$Date, Station=Temp_10m$Station, Temperature_10m=Temp_10m$Temperature_C)
+```
+
+
+
+#Get mean of CHL at depth 2 (1.5 to 2.5 meters)
+```{r}
+CHL_2m <- CHLIntegrateData %>%  filter(Depth_m >= 1.5 & Depth_m <= 2.5)%>% 
+  group_by(Date, Station) %>% 
+  summarize_all(mean)
+#CHL_2m <- CHL_2m %>% mutate(Date = ymd(CHL_2m$Date))
+
+Tempfilter3 <- data.frame(Date=CHL_2m$Date, Station=CHL_2m$Station, Chlorophyll_2m=CHL_2m$Fluorescence_mg_m3)
+```
+
+
+
+#Get mean of CHL at depth 10 (9.5 to 10.5 meters)
+```{r}
+CHL_10m <- CHLIntegrateData %>%  filter(Depth_m >= 9.5 & Depth_m <= 10.5)%>% 
+  group_by(Date, Station) %>% 
+  summarize_all(mean)
+#CHL_10m <- CHL_10m %>% mutate(Date = ymd(CHL_10m$Date))
+
+Tempfilter4 <- data.frame(Date=CHL_10m$Date, Station=CHL_10m$Station, Chlorophyll_10m=CHL_10m$Fluorescence_mg_m3)
+```
+
+
+#Get CHL max
+```{r}
+# CHLIntegrateData <- CHLIntegrateData %>% mutate(Depth = round(CHLIntegrateData$Depth_m))
+# nonans <- is.finite(CHLIntegrateData$Fluorescence_mg_m3)
+# Fluorescence_mg_m3 <- CHLIntegrateData$Fluorescence_mg_m3[nonans]
+# Date <- CHLIntegrateData$Date[nonans]
+# Station <- CHLIntegrateData$Station[nonans]
+# Temperature_C <- CHLIntegrateData$Temperature_C[nonans]
+# 
+# CHLMax <- data.frame(Date, Station, Fluorescence_mg_m3, Temperature_C)
+# CHLMax <- CHLMax %>% 
+#   group_by(Date, Station) %>% 
+#   CHLMax$Fluorescence_mg_m3[apply(CHLMax,2,which.max)]
+#    # summarise(CHLMax = max(Fluorescence_mg_m3, na.rm=TRUE), Temp_CHLMax = maxFluorescence_mg_m3, na.rm=TRUE)Temperature_C)
+
+```
+
+
+#Joining all the dataframe
+```{r}
+ZooplanktonData3 <- ZooplanktonData2 %>%
+  full_join(trapzdata)
+
+ZooplanktonData4 <- ZooplanktonData3 %>%
+  full_join(Tempfilter1) %>%
+  full_join(Tempfilter2) %>%
+  full_join(Tempfilter3) %>%
+  full_join(Tempfilter4)
+
+#save to csv
+write.csv(ZooplanktonData3,"ZooplanktonData3.csv", row.names=FALSE)
+write.csv(ZooplanktonData4,"ZooplanktonData4.csv", row.names=FALSE)
+```
+
+

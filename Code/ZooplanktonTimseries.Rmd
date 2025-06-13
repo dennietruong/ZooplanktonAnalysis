@@ -1,0 +1,93 @@
+---
+title: "ZooplanktonTimeseries"
+author: "DennieT"
+date: "2022-11-14"
+output: word_document
+---
+
+#Import package
+```{r}
+library("tidyverse")
+library(ggplot2)
+library("lubridate")
+library(dplyr)
+```
+
+```{r, echo = FALSE}
+library(kableExtra)
+```
+
+
+
+#Set Directory
+```{r}
+getwd()
+setwd("C:/Users/denni/Documents/RStudioBigelow/FieldProject")
+```
+
+
+
+#Import Data
+```{r}
+#cruisedata <- read.csv("Zooplankton Analysis 2022_Colby.csv", header=TRUE) 
+#header TRUE mean first line of csv has heading
+#View(cruisedata)
+
+ZooplankData <- read.csv("ZooplanktonData2.csv", header=TRUE)
+
+ZooplankData <- ZooplankData %>% mutate(Date = ymd(ZooplankData$Date))
+#View(ZooplankData)
+
+```
+
+
+
+#Filter data
+```{r}
+#Filter by Date
+#cruisedata <- dplyr::filter(DATA,Date==20120911)
+#View(cruisedata)
+
+
+#Filter by Station
+#stnData <- dplyr::filter(cruisedata,Station==1)
+#View(stnData)
+
+
+#Combine filter
+#subData <- dplyr::filter(DATA,Date==20120911 & Station==1)
+#View(subData)
+```
+
+
+
+```{r}
+#Omit rows with NAs
+ZooplankData2 <- drop_na(ZooplankData)
+```
+
+
+Plot Zooplankton Timeseries
+```{r}
+ggplot(ZooplankData2,aes(x=Date,y=Zooplankton,group= Station, color=factor(Station)))+
+  geom_path(linetype = "dashed")+
+  geom_point() + 
+  xlab('Date') + ylab('Total Biomass (in mg/m^3 of SW)')+
+  guides(color = guide_legend(title = 'Station'))+
+  labs(title = "Zooplankton Biomass Timeseries of all Stations") +
+  scale_x_date(date_labels = "%Y")
+#aesthetic = call the variable
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
